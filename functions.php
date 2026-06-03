@@ -123,10 +123,10 @@ add_action( 'customize_register', 'besibau_customize_register' );
  */
 function besibau_info( $key ) {
 	$info = array(
-		'phone'      => '+41 76 449 91 40',
-		'phone_href' => '+41764499140',
+		'phone'      => '+41 76 552 55 55',
+		'phone_href' => '+41765525555',
 		'email'      => 'info@besibau.ch',
-		'address'    => 'Pilatusstrasse 6, 6312 Steinhausen (ZG)',
+		'address'    => 'Sinserstrasse 67, 6330 Cham',
 		'facebook'   => '#',
 		'instagram'  => '#',
 		'linkedin'   => '#',

@@ -119,7 +119,7 @@ elseif ( 'kontakt' === $slug ) :
 		</div>
 	</section>
 	<section class="map-wrap">
-		<iframe title="Karte" loading="lazy" src="https://www.google.com/maps?q=Pilatusstrasse%206,%206312%20Steinhausen&output=embed"></iframe>
+		<iframe title="Karte" loading="lazy" src="https://www.google.com/maps?q=Sinserstrasse%2067,%206330%20Cham&output=embed"></iframe>
 	</section>
 	<?php
 
