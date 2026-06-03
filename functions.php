@@ -331,7 +331,7 @@ add_action( 'after_switch_theme', 'besibau_migrate_asset_urls', 20 );
  * (the official "Disable Default Fonts / Colors" switches), one time.
  */
 function besibau_elementor_defaults() {
-	if ( get_option( 'besibau_elementor_defaults_v1' ) ) {
+	if ( get_option( 'besibau_elementor_defaults_v2' ) ) {
 		return;
 	}
 	update_option( 'elementor_disable_typography_schemes', 'yes' );
@@ -339,7 +339,7 @@ function besibau_elementor_defaults() {
 	if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
 		\Elementor\Plugin::$instance->files_manager->clear_cache();
 	}
-	update_option( 'besibau_elementor_defaults_v1', '1' );
+	update_option( 'besibau_elementor_defaults_v2', '1' );
 }
 add_action( 'admin_init', 'besibau_elementor_defaults' );
 add_action( 'after_switch_theme', 'besibau_elementor_defaults', 30 );

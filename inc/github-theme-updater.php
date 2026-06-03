@@ -3,7 +3,7 @@
  * GitHub release updater for the BesiBau theme.
  *
  * Configure the repository through the Update URI header in style.css:
- * Update URI: https://github.com/OWNER/REPOSITORY
+ * Update URI: OWNER/REPOSITORY
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
@@ -37,6 +37,16 @@ function besibau_github_repository() {
 	}
 
 	return 'babatrodon/BesiBauWordpressTheme';
+}
+
+function besibau_github_repository_path() {
+	$repository = besibau_normalize_github_repository( besibau_github_repository() );
+
+	if ( ! preg_match( '#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $repository ) ) {
+		return 'babatrodon/BesiBauWordpressTheme';
+	}
+
+	return $repository;
 }
 
 function besibau_github_token() {
@@ -83,7 +93,7 @@ function besibau_github_request( $url ) {
 }
 
 function besibau_github_tag_release() {
-	$repository = besibau_github_repository();
+	$repository = besibau_github_repository_path();
 	if ( ! $repository ) {
 		return false;
 	}
@@ -116,7 +126,7 @@ function besibau_github_tag_release() {
 }
 
 function besibau_github_raw_release() {
-	$repository = besibau_github_repository();
+	$repository = besibau_github_repository_path();
 	if ( ! $repository ) {
 		return false;
 	}
@@ -174,7 +184,7 @@ function besibau_github_latest_release() {
 		return $release;
 	}
 
-	$repository = besibau_github_repository();
+	$repository = besibau_github_repository_path();
 	if ( ! $repository ) {
 		$release = false;
 		return false;
@@ -234,7 +244,7 @@ function besibau_github_download_args( $args, $url ) {
 		return $args;
 	}
 
-	$repository = besibau_github_repository();
+	$repository = besibau_github_repository_path();
 	if ( ! $repository || false === strpos( $url, 'https://api.github.com/repos/' . $repository . '/' ) ) {
 		return $args;
 	}
@@ -364,7 +374,7 @@ function besibau_github_update_admin_page() {
 	$version     = $release ? besibau_github_release_version( $release ) : '';
 	$package     = $release ? besibau_github_release_package( $release ) : '';
 	$has_update  = $version && version_compare( $version, $theme->get( 'Version' ), '>' );
-	$repository  = besibau_github_repository();
+	$repository  = besibau_github_repository_path();
 	$update_data = get_site_transient( 'update_themes' );
 
 	echo '<div class="wrap"><h1>' . esc_html__( 'BesiBau GitHub Update', 'besibau' ) . '</h1>';

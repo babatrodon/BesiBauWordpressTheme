@@ -4,8 +4,8 @@ Theme URI: https://besibau.ch
 Author: BesiBau
 Author URI: https://besibau.ch
 Description: Premium multi-page theme for BesiBau (Bau, Sanierung & Renovation in Zug). On activation it creates the pages and pre-loads each one with its design as editable Elementor blocks (bundled local images). Elementor header/footer locations supported.
-Version: 1.1.7
-Update URI: https://github.com/babatrodon/BesiBauWordpressTheme
+Version: 1.1.8
+Update URI: babatrodon/BesiBauWordpressTheme
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.2
@@ -298,7 +298,19 @@ body.nav-open .mobile-nav{display:flex}
 @media(max-width:620px){.page-hero{padding:88px 0 70px}}
 
 /* Elementor content inherits the brand font */
-.elementor-heading-title,.elementor-widget-text-editor,.elementor-button,
-.elementor-icon-box-title,.elementor-icon-box-description,
-.elementor-icon-list-text,.elementor-counter-number,.elementor-counter-title,
-.elementor-image-box-title,.elementor-image-box-description{font-family:'Montserrat',Helvetica,Arial,sans-serif}
+.elementor,
+.elementor h1,.elementor h2,.elementor h3,.elementor h4,.elementor h5,.elementor h6,
+.elementor p,.elementor a,.elementor span:not(.elementor-icon):not([class*="fa-"]):not([class*="eicon"]),
+.elementor-heading-title,
+.elementor-widget-heading .elementor-heading-title,
+.elementor-widget-text-editor,
+.elementor-widget-text-editor *,
+.elementor-button,
+.elementor-button span,
+.elementor-icon-box-title,
+.elementor-icon-box-description,
+.elementor-icon-list-text,
+.elementor-counter-number,
+.elementor-counter-title,
+.elementor-image-box-title,
+.elementor-image-box-description{font-family:'Montserrat',Helvetica,Arial,sans-serif!important}
