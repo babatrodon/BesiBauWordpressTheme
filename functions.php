@@ -45,10 +45,46 @@ function besibau_assets() {
 
 	wp_register_script( 'besibau-interactions', false, array(), $theme_version, true );
 	wp_enqueue_script( 'besibau-interactions' );
-	wp_add_inline_script(
-		'besibau-interactions',
-		"(function(){var b=document.querySelector('.burger');function closeNav(){document.body.classList.remove('nav-open');if(b){b.setAttribute('aria-expanded','false');}}if(b){b.setAttribute('aria-expanded','false');b.addEventListener('click',function(){var open=document.body.classList.toggle('nav-open');b.setAttribute('aria-expanded',open?'true':'false');});}document.querySelectorAll('.mobile-nav a').forEach(function(a){a.addEventListener('click',closeNav);});var mq=window.matchMedia('(min-width:1001px)');function syncNav(e){if(e.matches){closeNav();}}if(mq.addEventListener){mq.addEventListener('change',syncNav);}else if(mq.addListener){mq.addListener(syncNav);}syncNav(mq);function run(el){if(el.getAttribute('data-counted')){return;}el.setAttribute('data-counted','1');var t=+el.getAttribute('data-count'),s=Math.max(1,Math.ceil(t/45)),c=0;var i=setInterval(function(){c+=s;if(c>=t){c=t;clearInterval(i);}el.textContent=c+(el.getAttribute('data-suffix')||'');},26);}var counters=document.querySelectorAll('[data-count]');if(!('IntersectionObserver' in window)){counters.forEach(run);return;}var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){run(x.target);io.unobserve(x.target);}});});counters.forEach(function(el){io.observe(el);});})();"
-	);
+	$besibau_js = <<<'JS'
+(function(){
+	var b=document.querySelector('.burger');
+	function closeNav(){document.body.classList.remove('nav-open');if(b){b.setAttribute('aria-expanded','false');}}
+	if(b){b.setAttribute('aria-expanded','false');b.addEventListener('click',function(){var open=document.body.classList.toggle('nav-open');b.setAttribute('aria-expanded',open?'true':'false');});}
+	document.querySelectorAll('.mobile-nav a').forEach(function(a){a.addEventListener('click',closeNav);});
+	var mq=window.matchMedia('(min-width:1001px)');
+	function syncNav(e){if(e.matches){closeNav();}}
+	if(mq.addEventListener){mq.addEventListener('change',syncNav);}else if(mq.addListener){mq.addListener(syncNav);}
+	syncNav(mq);
+
+	function counterTarget(el){
+		return parseFloat(el.getAttribute('data-count')||el.getAttribute('data-to-value')||el.getAttribute('data-to')||'0');
+	}
+	function counterSuffix(el){
+		var next=el.nextElementSibling;
+		if(el.classList&&el.classList.contains('elementor-counter-number')&&next&&next.classList&&next.classList.contains('elementor-counter-number-suffix')){return '';}
+		var suffix=el.getAttribute('data-suffix');
+		if(suffix!==null){return suffix;}
+		return next&&next.classList&&next.classList.contains('elementor-counter-number-suffix')?next.textContent:'';
+	}
+	function runCounter(el){
+		if(el.getAttribute('data-counted')){return;}
+		var target=counterTarget(el);
+		if(!target){return;}
+		el.setAttribute('data-counted','1');
+		var suffix=counterSuffix(el),step=Math.max(1,Math.ceil(target/45)),current=0;
+		var interval=setInterval(function(){
+			current+=step;
+			if(current>=target){current=target;clearInterval(interval);}
+			el.textContent=current+suffix;
+		},26);
+	}
+	var counters=document.querySelectorAll('[data-count],.elementor-counter-number[data-to-value],.elementor-counter-number[data-to]');
+	if(!('IntersectionObserver' in window)){counters.forEach(runCounter);return;}
+	var io=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){runCounter(entry.target);io.unobserve(entry.target);}});});
+	counters.forEach(function(el){io.observe(el);});
+})();
+JS;
+	wp_add_inline_script( 'besibau-interactions', $besibau_js );
 }
 add_action( 'wp_enqueue_scripts', 'besibau_assets' );
 
@@ -446,6 +482,90 @@ function besibau_migrate_saved_contact_details() {
 	update_option( 'besibau_contact_details_migrated_v2', '1' );
 }
 add_action( 'admin_init', 'besibau_migrate_saved_contact_details' );
+
+/**
+ * Repair saved Elementor layouts that were imported before the final homepage
+ * polish: no dependency on Elementor animations, real button links, and no
+ * coding stock image in the building-company sections.
+ */
+function besibau_repair_elementor_layout_value( $value ) {
+	if ( is_string( $value ) ) {
+		return str_replace( '/assets/img/why.jpg', '/assets/img/hero.jpg', $value );
+	}
+
+	if ( ! is_array( $value ) ) {
+		return $value;
+	}
+
+	if ( isset( $value['settings'] ) && is_array( $value['settings'] ) ) {
+		unset( $value['settings']['animation'] );
+		unset( $value['settings']['_animation'] );
+
+		if ( isset( $value['settings']['link']['url'], $value['settings']['text'] ) && '#' === $value['settings']['link']['url'] ) {
+			$button_text = wp_strip_all_tags( (string) $value['settings']['text'] );
+
+			if ( false !== strpos( $button_text, 'Dienstleistungen' ) ) {
+				$value['settings']['link']['url'] = besibau_url( 'dienstleistungen' );
+			} elseif ( false !== strpos( $button_text, 'Projekten' ) ) {
+				$value['settings']['link']['url'] = besibau_url( 'unsere-arbeit' );
+			} elseif ( false !== strpos( $button_text, 'Kontaktieren' ) ) {
+				$value['settings']['link']['url'] = besibau_url( 'kontakt' );
+			} elseif ( false !== strpos( $button_text, 'Mehr' ) && false !== strpos( $button_text, 'uns' ) ) {
+				$value['settings']['link']['url'] = besibau_url( 'ueber-uns' );
+			}
+		}
+	}
+
+	foreach ( $value as $key => $item ) {
+		$value[ $key ] = besibau_repair_elementor_layout_value( $item );
+	}
+
+	return $value;
+}
+
+function besibau_repair_saved_elementor_layouts() {
+	if ( get_option( 'besibau_layout_repair_v1' ) ) {
+		return;
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => array( 'page', 'elementor_library' ),
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => array(
+			array(
+				'key'     => '_elementor_data',
+				'compare' => 'EXISTS',
+			),
+		),
+	) );
+
+	foreach ( $posts as $post_id ) {
+		$raw = get_post_meta( $post_id, '_elementor_data', true );
+		if ( ! is_string( $raw ) || '' === $raw ) {
+			continue;
+		}
+
+		$decoded = json_decode( $raw, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+
+		$updated = wp_json_encode( besibau_repair_elementor_layout_value( $decoded ) );
+		if ( $updated && $updated !== $raw ) {
+			update_post_meta( $post_id, '_elementor_data', wp_slash( $updated ) );
+		}
+	}
+
+	if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+
+	update_option( 'besibau_layout_repair_v1', '1' );
+}
+add_action( 'admin_init', 'besibau_repair_saved_elementor_layouts' );
+add_action( 'after_switch_theme', 'besibau_repair_saved_elementor_layouts', 40 );
 
 /**
  * Contact form handler. Sends to the company email via wp_mail.

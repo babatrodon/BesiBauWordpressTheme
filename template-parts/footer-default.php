@@ -64,7 +64,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 	</div>
 	<div class="footer-bottom"><div class="container">
-		<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> BesiBau. Alle Rechte vorbehalten.</span>
+		<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> BesiBau. Alle Rechte vorbehalten. <span class="footer-credit">Made with love by <a href="https://lolit.ch/" target="_blank" rel="noopener">LoliT</a></span></span>
 		<span>Bauen &middot; Sanieren &middot; Renovieren</span>
 	</div></div>
 </footer>
