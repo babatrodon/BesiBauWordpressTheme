@@ -3,15 +3,6 @@
  * Default theme header shown when no Elementor header is assigned.
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-
-$besibau_nav = array(
-	'#home'        => 'Home',
-	'#ueber-uns'  => 'Über Uns',
-	'#leistungen' => 'Dienstleistungen',
-	'#team'       => 'Unser Team',
-	'#projekte'   => 'Unsere Arbeit',
-	'#kontakt'    => 'Kontakt',
-);
 ?>
 <div class="topbar"><div class="container topbar-in">
 	<div class="tb-left">
@@ -32,22 +23,22 @@ $besibau_nav = array(
 			<?php the_custom_logo(); ?>
 		<?php else : ?>
 			<span class="logo-ic"><i class="fa-solid fa-trowel-bricks"></i></span>
-			<span class="logo-text">Besi<b>Bau</b><small>Bau · Sanierung · Renovation</small></span>
+			<span class="logo-text">Besi<b>Bau</b><small>Bau &middot; Sanierung &middot; Renovation</small></span>
 		<?php endif; ?>
 	</a>
 
 	<nav class="main-nav">
-		<?php foreach ( $besibau_nav as $href => $label ) : ?>
-			<a href="<?php echo esc_attr( $href ); ?>"><?php echo esc_html( $label ); ?></a>
+		<?php foreach ( besibau_nav_items() as $item ) : ?>
+			<a class="<?php echo besibau_is_active( $item[0] ) ? 'active' : ''; ?>" href="<?php echo esc_url( besibau_url( $item[0] ) ); ?>"><?php echo esc_html( $item[1] ); ?></a>
 		<?php endforeach; ?>
 	</nav>
-	<a class="btn btn-gold nav-cta" href="#kontakt">Offerte anfordern</a>
+	<a class="btn btn-gold nav-cta" href="<?php echo esc_url( besibau_url( 'kontakt' ) ); ?>">Offerte anfordern</a>
 	<button class="burger" aria-label="Menü öffnen"><i class="fa-solid fa-bars"></i></button>
 </div>
 <nav class="mobile-nav">
-	<?php foreach ( $besibau_nav as $href => $label ) : ?>
-		<a href="<?php echo esc_attr( $href ); ?>"><?php echo esc_html( $label ); ?></a>
+	<?php foreach ( besibau_nav_items() as $item ) : ?>
+		<a href="<?php echo esc_url( besibau_url( $item[0] ) ); ?>"><?php echo esc_html( $item[1] ); ?></a>
 	<?php endforeach; ?>
-	<a href="#kontakt">Offerte anfordern</a>
+	<a href="<?php echo esc_url( besibau_url( 'kontakt' ) ); ?>">Offerte anfordern</a>
 </nav>
 </header>

@@ -1,19 +1,39 @@
 <?php
 /**
- * Front page: the full one-page BesiBau design.
+ * Home. Editable with Elementor (the_content). Shows the built-in design as a
+ * fallback until you build the page in Elementor.
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 get_header();
 $u = get_template_directory_uri();
+
+ob_start();
+if ( have_posts() ) {
+	while ( have_posts() ) {
+		the_post();
+		the_content();
+	}
+}
+$besibau_content = ob_get_clean();
+echo $besibau_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+$besibau_plain = trim( wp_strip_all_tags( $besibau_content ) );
+$besibau_empty = ( '' === $besibau_plain
+	&& false === strpos( $besibau_content, '<img' )
+	&& false === strpos( $besibau_content, '<iframe' )
+	&& false === strpos( $besibau_content, 'background-image' ) );
+$besibau_editing = ( isset( $_GET['elementor-preview'] ) || ( isset( $_GET['action'] ) && 'elementor' === $_GET['action'] ) );
+
+if ( $besibau_empty && ! $besibau_editing ) :
 ?>
 
-<section class="hero" id="home">
+<section class="hero">
 	<div class="container"><div class="hero-in">
 		<span class="eyebrow">Bauen &middot; Sanieren &middot; Renovieren</span>
 		<h1>Hochwertiges Bauen, Sanieren und Renovieren in Zug und Region</h1>
 		<p>Ihr Partner für Verputz-, Maler- und Trockenbauarbeiten, Fliesen- und Bodenverlegung sowie komplette Bau- und Wohnungssanierungen. Alles aus einer Hand.</p>
 		<div class="hero-cta">
-			<a class="btn btn-gold" href="#leistungen">Zu den Dienstleistungen</a>
+			<a class="btn btn-gold" href="<?php echo esc_url( besibau_url( 'dienstleistungen' ) ); ?>">Zu den Dienstleistungen</a>
 			<a class="btn btn-ghost" href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><i class="fa-solid fa-phone"></i> <?php echo esc_html( besibau_info( 'phone' ) ); ?></a>
 		</div>
 	</div></div>
@@ -40,7 +60,7 @@ $u = get_template_directory_uri();
 	</div>
 </section>
 
-<section class="section" id="ueber-uns">
+<section class="section">
 	<div class="container about-grid">
 		<div class="about-imgs">
 			<img class="ai-main" src="<?php echo esc_url( $u . '/assets/img/about1.jpg' ); ?>" alt="BesiBau Malerarbeiten">
@@ -50,47 +70,24 @@ $u = get_template_directory_uri();
 			<span class="kicker">Über BesiBau</span>
 			<h2 class="sec-title">Ihr zuverlässiger Partner</h2><div class="accent-line"></div>
 			<p>Unser Team besteht aus hochmotivierten Fachleuten mit jahrelanger Erfahrung und handwerklichem Geschick. Wir arbeiten für <strong>Privatkunden, Unternehmen und Verwaltungen</strong> und setzen jedes Projekt sauber und termingerecht um.</p>
-			<p>Von der Beratung über die Planung bis zur Ausführung sind wir an Ihrer Seite. Alles aus einer Hand.</p>
 			<div class="vp-grid">
 				<div class="vp"><i class="fa-solid fa-helmet-safety"></i><span>Erfahrene Fachmänner</span></div>
 				<div class="vp"><i class="fa-solid fa-headset"></i><span>Erstklassige Beratung</span></div>
 				<div class="vp"><i class="fa-solid fa-face-smile"></i><span>Zufriedene Kundschaft</span></div>
 				<div class="vp"><i class="fa-solid fa-leaf"></i><span>Langlebig &amp; Nachhaltig</span></div>
 			</div>
-			<a class="btn btn-gold" href="#kontakt">Projekt besprechen</a>
+			<a class="btn btn-gold" href="<?php echo esc_url( besibau_url( 'ueber-uns' ) ); ?>">Mehr über uns</a>
 		</div>
 	</div>
 </section>
 
-<section class="section soft" id="leistungen">
-	<div class="container center"><span class="kicker">Unsere Dienstleistungen</span><h2 class="sec-title">Alles rund um Renovierung und Sanierung</h2><div class="accent-line"></div><p class="lead">Ob Verputz, Malerarbeiten, Trockenbau oder komplette Sanierung. Wir sind Ihr vielseitiger Partner.</p></div>
-	<div class="container srv-grid">
-		<?php
-		$services = array(
-			array( 'fa-trowel', 'Verputzarbeiten', 'Innen &amp; Fassade', 'Saubere, präzise Verputzarbeiten für glatte, langlebige Oberflächen.' ),
-			array( 'fa-paint-roller', 'Spachtel- &amp; Malerarbeiten', 'Frische Räume', 'Hochwertige, umweltfreundliche Farben und makellose Anstriche.' ),
-			array( 'fa-layer-group', 'Trockenbau', 'Wände &amp; Decken', 'Trennwände, Decken und Innenausbau, flexibel und sauber umgesetzt.' ),
-			array( 'fa-border-all', 'Fliesenverlegung', 'Bad, Küche &amp; Boden', 'Exakte Fliesenarbeiten mit sauberen Fugen und langlebigem Finish.' ),
-			array( 'fa-ruler-combined', 'Boden- &amp; Parkettverlegung', 'Warm &amp; wohnlich', 'Parkett, Laminat und Bodenbeläge fachgerecht und sauber verlegt.' ),
-			array( 'fa-building-circle-check', 'Sanierung', 'Bau &middot; Wohnung &middot; Bad', 'Komplette Sanierungen aus einer Hand, termingerecht und fair.' ),
-		);
-		foreach ( $services as $s ) {
-			echo '<div class="srv-card"><div class="srv-ic"><i class="fa-solid ' . esc_attr( $s[0] ) . '"></i></div>';
-			echo '<h3>' . wp_kses_post( $s[1] ) . '</h3><span class="srv-sub">' . wp_kses_post( $s[2] ) . '</span>';
-			echo '<p>' . wp_kses_post( $s[3] ) . '</p></div>';
-		}
-		?>
-	</div>
+<section class="section soft">
+	<?php besibau_sec_head( 'Unsere Dienstleistungen', 'Alles rund um Renovierung und Sanierung', 'Ob Verputz, Malerarbeiten, Trockenbau oder komplette Sanierung. Wir sind Ihr vielseitiger Partner.' ); ?>
+	<?php besibau_services( 'renovation' ); ?>
+	<div class="container center"><a class="btn btn-dark" href="<?php echo esc_url( besibau_url( 'dienstleistungen' ) ); ?>">Alle Dienstleistungen</a></div>
 </section>
 
-<section class="section stats">
-	<div class="container"><div class="stats-grid">
-		<div class="stat"><span class="num" data-count="450" data-suffix="+">0</span><label>Abgeschlossene Projekte</label><div class="dot"></div></div>
-		<div class="stat"><span class="num" data-count="15" data-suffix="+">0</span><label>Fachmänner im Team</label><div class="dot"></div></div>
-		<div class="stat"><span class="num" data-count="12" data-suffix="+">0</span><label>Jahre Erfahrung</label><div class="dot"></div></div>
-		<div class="stat"><span class="num" data-count="400" data-suffix="+">0</span><label>Zufriedene Kunden</label><div class="dot"></div></div>
-	</div></div>
-</section>
+<?php besibau_stats(); ?>
 
 <section class="why">
 	<div class="container"><div class="why-card">
@@ -103,7 +100,7 @@ $u = get_template_directory_uri();
 			<li><i class="fa-solid fa-check"></i><div><strong>Nachhaltigkeit</strong><span>Einsatz hochwertiger, langlebiger Materialien.</span></div></li>
 			<li><i class="fa-solid fa-check"></i><div><strong>Alles aus einer Hand</strong><span>Von Verputz bis Sanierung, ein Ansprechpartner.</span></div></li>
 		</ul>
-		<a class="btn btn-gold" href="#kontakt">Kontaktieren Sie uns</a>
+		<a class="btn btn-gold" href="<?php echo esc_url( besibau_url( 'kontakt' ) ); ?>">Kontaktieren Sie uns</a>
 	</div></div>
 </section>
 
@@ -116,69 +113,25 @@ $u = get_template_directory_uri();
 	</div>
 </section>
 
-<section class="section" id="team">
-	<div class="container center"><span class="kicker">Unser Team</span><h2 class="sec-title">Die Menschen hinter BesiBau</h2><div class="accent-line"></div></div>
-	<div class="container team-grid leads">
-		<div class="team-card"><div class="team-ph"><i class="fa-solid fa-user-tie"></i></div><h3>Besnik Spahiu</h3><span>CEO</span></div>
-		<div class="team-card"><div class="team-ph"><i class="fa-solid fa-user-gear"></i></div><h3>Lorent Salihu</h3><span>CTO</span></div>
-		<div class="team-card"><div class="team-ph"><i class="fa-solid fa-clipboard-check"></i></div><h3>Fadil Maliqi</h3><span>Projektleiter</span></div>
-	</div>
-	<div class="container team-grid">
-		<?php
-		$crew = array( 'Argjend', 'Alfos', 'Panajot', 'Avni', 'Eldion', 'Emin', 'Niko', 'Xavit', 'Blerim', 'Dani', 'Andre', 'Muharrem' );
-		foreach ( $crew as $name ) {
-			echo '<div class="team-card"><div class="team-ph sm"><i class="fa-solid fa-person-digging"></i></div><h3>' . esc_html( $name ) . '</h3><span>Mitarbeiter</span></div>';
-		}
-		?>
-	</div>
-</section>
-
-<section class="section soft" id="projekte">
-	<div class="container center"><span class="kicker">Unsere Arbeit</span><h2 class="sec-title">Ein Einblick in unsere Projekte</h2><div class="accent-line"></div><p class="lead">Lassen Sie uns gemeinsam Ihre Ideen verwirklichen. Ob Renovierung, Neugestaltung oder Sanierung.</p></div>
+<section class="section">
+	<?php besibau_sec_head( 'Unsere Projekte', 'Ein Einblick in unsere Arbeit', 'Lassen Sie uns gemeinsam Ihre Ideen verwirklichen.' ); ?>
 	<div class="container proj-grid">
 		<?php
-		$projects = array(
-			array( 'proj1.jpg', 'Sanierung', 'Wohnungssanierung Zug', 'Komplette Sanierung mit Verputz-, Maler- und Bodenarbeiten.' ),
-			array( 'proj2.jpg', 'Badsanierung', 'Badsanierung Steinhausen', 'Modernes Bad mit präziser Fliesen- und Trockenbauarbeit.' ),
-			array( 'proj3.jpg', 'Verputz', 'Innenausbau Illertissen', 'Trockenbau, Spachtel- und Malerarbeiten für einen Neubau.' ),
-			array( 'proj4.jpg', 'Fassade', 'Fassadenrenovierung Cham', 'Verputz und Anstrich für eine langlebige, schöne Fassade.' ),
-			array( 'proj5.jpg', 'Malerei', 'Malerarbeiten Baar', 'Frische Farben und makellose Anstriche für mehrere Wohnungen.' ),
-			array( 'proj6.jpg', 'Boden', 'Parkett Hünenberg', 'Warmer Parkettboden, fachgerecht und sauber verlegt.' ),
+		$teasers = array(
+			array( 'proj1.jpg', 'Sanierung', 'Wohnungssanierung Zug', 'Verputz-, Maler- und Bodenarbeiten.' ),
+			array( 'proj2.jpg', 'Badsanierung', 'Badsanierung Steinhausen', 'Präzise Fliesen- und Trockenbauarbeit.' ),
+			array( 'proj3.jpg', 'Verputz', 'Innenausbau Cham', 'Trockenbau, Spachtel- und Malerarbeiten.' ),
 		);
-		foreach ( $projects as $p ) {
+		foreach ( $teasers as $p ) {
 			echo '<div class="proj-card"><div class="proj-img"><span class="tag">' . esc_html( $p[1] ) . '</span>';
 			echo '<img src="' . esc_url( $u . '/assets/img/' . $p[0] ) . '" alt="' . esc_attr( $p[2] ) . '"></div>';
 			echo '<div class="proj-body"><h3>' . esc_html( $p[2] ) . '</h3><p>' . esc_html( $p[3] ) . '</p></div></div>';
 		}
 		?>
 	</div>
+	<div class="container center"><a class="btn btn-gold" href="<?php echo esc_url( besibau_url( 'unsere-arbeit' ) ); ?>">Zu den Projekten</a></div>
 </section>
 
-<section class="section" id="kontakt">
-	<div class="container contact-grid">
-		<div class="contact-info">
-			<span class="kicker">Nehmen Sie Kontakt auf</span>
-			<h2 class="sec-title">Wir sind für Sie da</h2><div class="accent-line"></div>
-			<p>Schicken Sie uns Ihre Anfrage über das Formular. Wir leiten sie an den richtigen Ansprechpartner weiter und melden uns so schnell wie möglich bei Ihnen zurück.</p>
-			<ul class="ci-list">
-				<li><i class="fa-solid fa-location-dot"></i><div><strong>Schweiz</strong><br><?php echo esc_html( besibau_info( 'address' ) ); ?></div></li>
-				<li><i class="fa-solid fa-phone"></i><div><a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><?php echo esc_html( besibau_info( 'phone' ) ); ?></a></div></li>
-				<li><i class="fa-solid fa-envelope"></i><div><a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><?php echo esc_html( besibau_info( 'email' ) ); ?></a></div></li>
-				<li><i class="fa-solid fa-location-dot"></i><div><strong>Deutschland</strong><br><?php echo esc_html( besibau_info( 'address_de' ) ); ?></div></li>
-			</ul>
-		</div>
-		<form class="contact-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-			<input type="hidden" name="action" value="besibau_contact">
-			<?php wp_nonce_field( 'besibau_contact', 'besibau_nonce' ); ?>
-			<?php if ( isset( $_GET['sent'] ) && '1' === $_GET['sent'] ) : ?>
-				<div class="form-note ok">Vielen Dank! Ihre Anfrage wurde verschickt. Wir melden uns in Kürze.</div>
-			<?php endif; ?>
-			<div class="cf-row"><input type="text" name="name" placeholder="Ihr Name*" required><input type="email" name="email" placeholder="E-Mail*" required></div>
-			<div class="cf-row"><input type="tel" name="phone" placeholder="Telefon"><input type="text" name="subject" placeholder="Betreff"></div>
-			<textarea name="message" placeholder="Ihre Nachricht*" required></textarea>
-			<button class="btn btn-gold" type="submit">Anfrage verschicken</button>
-		</form>
-	</div>
-</section>
-
-<?php get_footer(); ?>
+<?php
+endif;
+get_footer();

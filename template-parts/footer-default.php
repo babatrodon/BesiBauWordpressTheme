@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div class="container">
 		<h2>Sie brauchen eine Offerte?</h2>
 		<p>Kontaktieren Sie uns und lassen Sie sich beraten oder fordern Sie direkt eine unverbindliche Offerte an.</p>
-		<a class="btn btn-gold" href="#kontakt">Kontaktieren Sie uns</a>
+		<a class="btn btn-gold" href="<?php echo esc_url( besibau_url( 'kontakt' ) ); ?>">Kontaktieren Sie uns</a>
 	</div>
 </section>
 
@@ -44,17 +44,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</ul>
 		</div>
 		<div class="f-col">
-			<h4>Standorte</h4>
-			<p><strong>Schweiz</strong><br><?php echo esc_html( besibau_info( 'address' ) ); ?><br>
-			<a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><?php echo esc_html( besibau_info( 'phone' ) ); ?></a><br>
-			<a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><?php echo esc_html( besibau_info( 'email' ) ); ?></a></p>
-			<p><strong>Deutschland</strong><br><?php echo esc_html( besibau_info( 'address_de' ) ); ?><br>
-			<a href="tel:<?php echo esc_attr( besibau_info( 'phone_de_h' ) ); ?>"><?php echo esc_html( besibau_info( 'phone_de' ) ); ?></a><br>
-			<a href="mailto:<?php echo esc_attr( besibau_info( 'email_de' ) ); ?>"><?php echo esc_html( besibau_info( 'email_de' ) ); ?></a></p>
+			<h4>Kontakt</h4>
+			<p><strong>BesiBau</strong><br><?php echo esc_html( besibau_info( 'address' ) ); ?></p>
+			<p><a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><i class="fa-solid fa-phone" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'phone' ) ); ?></a><br>
+			<a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><i class="fa-solid fa-envelope" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'email' ) ); ?></a></p>
 		</div>
 	</div>
 	<div class="footer-bottom"><div class="container">
-		<span>&copy; <?php echo esc_html( date( 'Y' ) ); ?> BesiBau. Alle Rechte vorbehalten.</span>
+		<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> BesiBau. Alle Rechte vorbehalten.</span>
 		<span>Bauen &middot; Sanieren &middot; Renovieren</span>
 	</div></div>
 </footer>

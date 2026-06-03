@@ -1,73 +1,50 @@
-BesiBau WordPress Theme
-=======================
+BesiBau WordPress Theme (multi-page, Elementor pre-loaded)
+=========================================================
 
-ONE-CLICK INSTALL
-1. WordPress Dashboard > Appearance > Themes > Add New > Upload Theme.
-2. Choose besibau-theme.zip and click Install Now.
-3. Click Activate.
-Done. The full site (header, all sections, footer) is live. No page builder, no extra plugins.
+INSTALL / UPDATE
+1. WordPress > Appearance > Themes > Add New > Upload Theme.
+2. Choose the theme .zip, Install Now (choose "Replace current" if it already exists).
+3. Activate.
 
-ELEMENTOR HEADER AND FOOTER
-The theme has editable Elementor header/footer support now.
+ON ACTIVATION the theme automatically:
+- Creates the pages: Home, Über Uns, Dienstleistungen, Unser Team, Unsere Arbeit, Kontakt
+- Pre-loads each page with its full design as EDITABLE Elementor blocks (bundled local images)
+- Sets Home as the front page and turns on pretty permalinks
 
-Option A, Elementor Pro:
-Create a Header or Footer in Elementor Theme Builder and assign it. The theme will use it automatically.
+EDIT EVERYTHING WITH ELEMENTOR
+Open any page > "Edit with Elementor". The whole design appears as editable sections,
+columns and widgets. Keep the page template on "Default" so the BesiBau header and footer
+stay around it (do NOT use "Elementor Canvas").
 
-Option B, Elementor free:
-1. Elementor > Templates > Saved Templates > Add New.
-2. Create a Section or Container template for the header/footer.
-3. Appearance > Customize > BesiBau Elementor.
-4. Choose the saved header and footer templates.
+If you already had an older version installed: the pre-load only fills pages that are still
+empty. Re-activate the theme (switch to another theme and back) to load the design into
+empty pages, or visit wp-admin once (it also runs then). If styling looks off on first
+load, Elementor > Tools > Regenerate CSS.
 
-If no Elementor template is selected, the theme uses its built-in PHP header and footer.
-
-GITHUB AUTOMATIC UPDATES
-This theme includes a GitHub release updater and a GitHub Actions workflow.
-
-Setup:
-1. Create a GitHub repository for the theme.
-2. In style.css, replace:
-   Update URI: https://github.com/babatrodon/BesiBauWordpressTheme
-   with your real GitHub repository URL.
-3. Push the theme to the main branch.
-
-Every push to main creates a new GitHub release named like v1.0.1.23 and uploads
-besibau-theme.zip. WordPress checks that release and shows a normal theme update
-in Dashboard > Updates.
-
-Important: the GitHub repository should be public for the built-in updater. Private
-repositories need extra authentication handling on the WordPress side.
+HEADER & FOOTER
+The theme provides the header and footer (template-parts/header-default.php and
+footer-default.php). If you assign an Elementor Pro Theme Builder header/footer location,
+or pick a saved template under Customize > BesiBau Elementor, that is used instead.
 
 EDIT YOUR DETAILS (one place)
-Open functions.php and edit the besibau_info() array near the top: phone, email,
-addresses, and your Facebook / Instagram / LinkedIn links. Save and re-upload, or edit
-via Appearance > Theme File Editor.
+functions.php > besibau_info(): phone, email, address, social links. (Switzerland only.)
 
 YOUR LOGO
-By default a clean text logo "BesiBau" is shown. To use your image logo:
-Appearance > Customize > Site Identity > Logo. Upload it once. It appears in the header.
+Appearance > Customize > Site Identity > Logo. Otherwise a text logo "BesiBau" is shown.
 
-SWAP THE PHOTOS FOR YOUR OWN
-All images live in the folder assets/img/. Replace any file with your own photo using
-the SAME file name and it appears automatically. Files:
-  hero.jpg     large hero background
-  about1.jpg   left "About" image (tall)
-  about2.jpg   small overlapping "About" image
-  why.jpg      "Warum BesiBau" background
-  trio.jpg     "Versprechen" background
-  cta.jpg      "Offerte" band background
-  proj1..6.jpg the six project cards
-Easiest way: Appearance > Theme File Editor is not for images, so use FTP or your
-host's File Manager to upload into wp-content/themes/besibau-theme/assets/img/.
+SWAP THE PHOTOS
+assets/img/ holds all images. Replace a file with your own using the SAME name:
+hero.jpg, about1.jpg, about2.jpg, why.jpg, trio.jpg, cta.jpg, proj1..proj6.jpg.
 
 CONTACT FORM
-The form sends to your email via WordPress. If your host does not send mail reliably,
-install a free SMTP plugin (for example "WP Mail SMTP") and connect your mailbox.
-
-MENU
-The navigation is a one-page menu that scrolls to each section (Home, Über Uns,
-Dienstleistungen, Unser Team, Unsere Arbeit, Kontakt). To change labels or order,
-edit the $besibau_nav array in template-parts/header-default.php.
+The built-in form sends via WordPress. The Elementor contact page has a placeholder for a
+form plugin shortcode (Contact Form 7 / WPForms). If mail does not send, install WP Mail SMTP.
 
 COLOURS
-Gold #BA9056, dark #20232E. To adjust, edit the :root variables at the top of style.css.
+Gold #BA9056, dark #20232E. Edit the :root variables at the top of style.css.
+
+DEVELOPER NOTES
+- inc/elementor/*.json : the per-page Elementor designs loaded on activation (images use the
+  THEME_URI token, replaced with the live theme URL at load time).
+- inc/github-theme-updater.php : GitHub-based theme updates (Update URI in style.css).
+- .github/workflows/theme-release.yml : packages besibau-theme.zip on push to main.
