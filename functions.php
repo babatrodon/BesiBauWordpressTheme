@@ -272,6 +272,61 @@ function besibau_maybe_preload() {
 add_action( 'admin_init', 'besibau_maybe_preload' );
 
 /**
+ * Self-healing asset URLs: if the theme folder name changes (e.g. installed under a
+ * different directory), rewrite the image URLs stored inside the Elementor page data
+ * to the current theme folder and clear the Elementor CSS cache.
+ */
+function besibau_fix_elementor_asset_urls( $value ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $key => $item ) {
+			$value[ $key ] = besibau_fix_elementor_asset_urls( $item );
+		}
+		return $value;
+	}
+	if ( is_string( $value ) && false !== strpos( $value, '/assets/img/' ) && false !== strpos( $value, '/wp-content/themes/' ) ) {
+		$value = preg_replace(
+			'#https?://[^"\'\s]*?/wp-content/themes/[^/]+/assets/img/#',
+			get_template_directory_uri() . '/assets/img/',
+			$value
+		);
+	}
+	return $value;
+}
+
+function besibau_migrate_asset_urls() {
+	$current = get_template_directory_uri();
+	if ( get_option( 'besibau_assets_base' ) === $current ) {
+		return;
+	}
+
+	$slugs = array_merge( array( 'home' ), array_keys( besibau_pages() ) );
+	foreach ( $slugs as $slug ) {
+		$page = get_page_by_path( $slug );
+		if ( ! $page ) {
+			continue;
+		}
+		$data = get_post_meta( $page->ID, '_elementor_data', true );
+		if ( empty( $data ) ) {
+			continue;
+		}
+		$decoded = json_decode( $data, true );
+		if ( ! is_array( $decoded ) ) {
+			continue;
+		}
+		$fixed = besibau_fix_elementor_asset_urls( $decoded );
+		update_post_meta( $page->ID, '_elementor_data', wp_slash( wp_json_encode( $fixed ) ) );
+	}
+
+	if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+
+	update_option( 'besibau_assets_base', $current );
+}
+add_action( 'admin_init', 'besibau_migrate_asset_urls' );
+add_action( 'after_switch_theme', 'besibau_migrate_asset_urls', 20 );
+
+/**
  * Keep existing Elementor pages in sync with corrected company details.
  */
 function besibau_update_contact_text_value( $value ) {
