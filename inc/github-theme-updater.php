@@ -203,6 +203,7 @@ function besibau_update_theme_transient( $transient ) {
 	return $transient;
 }
 add_filter( 'pre_set_site_transient_update_themes', 'besibau_update_theme_transient' );
+add_filter( 'site_transient_update_themes', 'besibau_update_theme_transient' );
 
 function besibau_theme_api_info( $result, $action, $args ) {
 	if ( 'theme_information' !== $action || empty( $args->slug ) || get_stylesheet() !== $args->slug ) {
@@ -256,3 +257,51 @@ function besibau_github_source_selection( $source, $remote_source, $upgrader, $h
 	return $source;
 }
 add_filter( 'upgrader_source_selection', 'besibau_github_source_selection', 10, 4 );
+
+function besibau_github_update_admin_menu() {
+	add_theme_page(
+		__( 'BesiBau Update', 'besibau' ),
+		__( 'BesiBau Update', 'besibau' ),
+		'manage_options',
+		'besibau-update',
+		'besibau_github_update_admin_page'
+	);
+}
+add_action( 'admin_menu', 'besibau_github_update_admin_menu' );
+
+function besibau_github_update_admin_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['besibau_refresh_updates'] ) && check_admin_referer( 'besibau_refresh_updates' ) ) {
+		delete_site_transient( 'update_themes' );
+		wp_update_themes();
+		echo '<div class="notice notice-success"><p>' . esc_html__( 'Theme update check refreshed.', 'besibau' ) . '</p></div>';
+	}
+
+	$theme       = wp_get_theme();
+	$stylesheet  = get_stylesheet();
+	$release     = besibau_github_latest_release();
+	$version     = $release ? besibau_github_release_version( $release ) : '';
+	$package     = $release ? besibau_github_release_package( $release ) : '';
+	$has_update  = $version && version_compare( $version, $theme->get( 'Version' ), '>' );
+	$repository  = besibau_github_repository();
+	$update_data = get_site_transient( 'update_themes' );
+
+	echo '<div class="wrap"><h1>' . esc_html__( 'BesiBau GitHub Update', 'besibau' ) . '</h1>';
+	echo '<p>' . esc_html__( 'Use this page to verify what WordPress can see from GitHub.', 'besibau' ) . '</p>';
+	echo '<table class="widefat striped" style="max-width:900px"><tbody>';
+	echo '<tr><th>' . esc_html__( 'Theme slug', 'besibau' ) . '</th><td><code>' . esc_html( $stylesheet ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'Installed version', 'besibau' ) . '</th><td><code>' . esc_html( $theme->get( 'Version' ) ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'GitHub repository', 'besibau' ) . '</th><td><code>' . esc_html( $repository ? $repository : __( 'Not detected', 'besibau' ) ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'Latest GitHub version', 'besibau' ) . '</th><td><code>' . esc_html( $version ? $version : __( 'Not found', 'besibau' ) ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'Package URL', 'besibau' ) . '</th><td><code style="word-break:break-all">' . esc_html( $package ? $package : __( 'Not found', 'besibau' ) ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'Update available', 'besibau' ) . '</th><td>' . esc_html( $has_update ? __( 'Yes', 'besibau' ) : __( 'No', 'besibau' ) ) . '</td></tr>';
+	echo '<tr><th>' . esc_html__( 'Update transient has BesiBau response', 'besibau' ) . '</th><td>' . esc_html( ( isset( $update_data->response ) && isset( $update_data->response[ $stylesheet ] ) ) ? __( 'Yes', 'besibau' ) : __( 'No', 'besibau' ) ) . '</td></tr>';
+	echo '</tbody></table>';
+	echo '<form method="post" style="margin-top:20px">';
+	wp_nonce_field( 'besibau_refresh_updates' );
+	submit_button( __( 'Refresh Theme Update Check', 'besibau' ), 'primary', 'besibau_refresh_updates' );
+	echo '</form></div>';
+}
