@@ -18,14 +18,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div></div>
 
 <header class="site-header"><div class="container header-in">
-	<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-		<?php if ( has_custom_logo() ) : ?>
-			<?php the_custom_logo(); ?>
-		<?php else : ?>
+	<?php if ( has_custom_logo() ) : ?>
+		<a class="brand brand-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+			<?php
+			echo wp_get_attachment_image( get_theme_mod( 'custom_logo' ), 'full', false, array(
+				'class' => 'custom-logo',
+				'alt'   => get_bloginfo( 'name' ),
+			) );
+			?>
+		</a>
+	<?php else : ?>
+		<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 			<span class="logo-ic"><i class="fa-solid fa-trowel-bricks"></i></span>
 			<span class="logo-text">Besi<b>Bau</b><small>Bau &middot; Sanierung &middot; Renovation</small></span>
-		<?php endif; ?>
-	</a>
+		</a>
+	<?php endif; ?>
 
 	<nav class="main-nav">
 		<?php foreach ( besibau_nav_items() as $item ) : ?>

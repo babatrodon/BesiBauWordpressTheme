@@ -15,7 +15,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <footer class="site-footer">
 	<div class="container footer-grid">
 		<div class="f-col f-brand">
-			<?php if ( has_custom_logo() ) { the_custom_logo(); } else { echo '<span class="logo-text">Besi<b>Bau</b></span>'; } ?>
+			<?php
+			if ( has_custom_logo() ) {
+				echo '<a class="footer-logo" href="' . esc_url( home_url( '/' ) ) . '" aria-label="' . esc_attr( get_bloginfo( 'name' ) ) . '">';
+				echo wp_get_attachment_image( get_theme_mod( 'custom_logo' ), 'full', false, array(
+					'class' => 'custom-logo',
+					'alt'   => get_bloginfo( 'name' ),
+				) );
+				echo '</a>';
+			} else {
+				echo '<span class="logo-text">Besi<b>Bau</b></span>';
+			}
+			?>
 			<p>BesiBau ist Ihr Partner für hochwertiges Bauen, Sanieren und Renovieren in Zug und der Region.</p>
 			<div class="f-soc">
 				<a href="<?php echo esc_url( besibau_info( 'facebook' ) ); ?>" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
