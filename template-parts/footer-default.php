@@ -56,9 +56,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<div class="f-col">
 			<h4>Kontakt</h4>
-			<p class="footer-contact-line"><i class="fa-solid fa-location-dot"></i><span><?php echo esc_html( besibau_info( 'address' ) ); ?></span></p>
-			<p><a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><i class="fa-solid fa-phone" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'phone' ) ); ?></a><br>
-			<a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><i class="fa-solid fa-envelope" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'email' ) ); ?></a></p>
+			<ul class="f-contact">
+				<li><i class="fa-solid fa-location-dot"></i><span><?php echo esc_html( besibau_info( 'address' ) ); ?></span></li>
+				<li><a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><i class="fa-solid fa-phone"></i><span><?php echo esc_html( besibau_info( 'phone' ) ); ?></span></a></li>
+				<li><a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><i class="fa-solid fa-envelope"></i><span><?php echo esc_html( besibau_info( 'email' ) ); ?></span></a></li>
+			</ul>
 		</div>
 	</div>
 	<div class="footer-bottom"><div class="container">
