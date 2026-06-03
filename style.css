@@ -4,7 +4,7 @@ Theme URI: https://besibau.ch
 Author: BesiBau
 Author URI: https://besibau.ch
 Description: Premium multi-page theme for BesiBau (Bau, Sanierung & Renovation in Zug). On activation it creates the pages and pre-loads each one with its design as editable Elementor blocks (bundled local images). Elementor header/footer locations supported.
-Version: 1.1.6
+Version: 1.1.7
 Update URI: https://github.com/babatrodon/BesiBauWordpressTheme
 Requires at least: 5.8
 Tested up to: 6.6
@@ -296,3 +296,9 @@ body.nav-open .mobile-nav{display:flex}
 .map-wrap{height:430px}
 .map-wrap iframe{width:100%;height:100%;border:0;filter:grayscale(.15)}
 @media(max-width:620px){.page-hero{padding:88px 0 70px}}
+
+/* Elementor content inherits the brand font */
+.elementor-heading-title,.elementor-widget-text-editor,.elementor-button,
+.elementor-icon-box-title,.elementor-icon-box-description,
+.elementor-icon-list-text,.elementor-counter-number,.elementor-counter-title,
+.elementor-image-box-title,.elementor-image-box-description{font-family:'Montserrat',Helvetica,Arial,sans-serif}

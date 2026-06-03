@@ -327,6 +327,24 @@ add_action( 'admin_init', 'besibau_migrate_asset_urls' );
 add_action( 'after_switch_theme', 'besibau_migrate_asset_urls', 20 );
 
 /**
+ * Make Elementor inherit the theme typography and colours
+ * (the official "Disable Default Fonts / Colors" switches), one time.
+ */
+function besibau_elementor_defaults() {
+	if ( get_option( 'besibau_elementor_defaults_v1' ) ) {
+		return;
+	}
+	update_option( 'elementor_disable_typography_schemes', 'yes' );
+	update_option( 'elementor_disable_color_schemes', 'yes' );
+	if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+	update_option( 'besibau_elementor_defaults_v1', '1' );
+}
+add_action( 'admin_init', 'besibau_elementor_defaults' );
+add_action( 'after_switch_theme', 'besibau_elementor_defaults', 30 );
+
+/**
  * Keep existing Elementor pages in sync with corrected company details.
  */
 function besibau_update_contact_text_value( $value ) {
