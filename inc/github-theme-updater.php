@@ -115,10 +115,62 @@ function besibau_github_tag_release() {
 	);
 }
 
+function besibau_github_raw_release() {
+	$repository = besibau_github_repository();
+	if ( ! $repository ) {
+		return false;
+	}
+
+	foreach ( array( 'main', 'master' ) as $branch ) {
+		$response = wp_remote_get(
+			'https://raw.githubusercontent.com/' . $repository . '/' . $branch . '/style.css',
+			array(
+				'timeout' => 10,
+				'headers' => array( 'User-Agent' => 'BesiBau WordPress Theme' ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			$GLOBALS['besibau_github_last_error'] = $response->get_error_message();
+			continue;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$GLOBALS['besibau_github_last_response_code'] = $code;
+		if ( 200 !== $code ) {
+			$GLOBALS['besibau_github_last_error'] = 'raw.githubusercontent.com returned HTTP ' . $code . ' for branch ' . $branch . '.';
+			continue;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( ! preg_match( '/^\s*\*?\s*Version:\s*([0-9][0-9a-zA-Z.\-]*)/mi', $body, $matches ) ) {
+			$GLOBALS['besibau_github_last_error'] = 'Could not read the Version header from style.css on GitHub.';
+			continue;
+		}
+
+		$GLOBALS['besibau_github_last_error'] = '';
+
+		return array(
+			'tag_name' => $matches[1],
+			'html_url' => 'https://github.com/' . $repository . '/releases/latest',
+			'package'  => 'https://github.com/' . $repository . '/releases/latest/download/besibau-theme.zip',
+			'body'     => __( 'Latest GitHub release.', 'besibau' ),
+		);
+	}
+
+	return false;
+}
+
 function besibau_github_latest_release() {
 	static $release = null;
 
 	if ( null !== $release ) {
+		return $release;
+	}
+
+	$cached = get_site_transient( 'besibau_github_release' );
+	if ( is_array( $cached ) && ! empty( $cached['tag_name'] ) ) {
+		$release = $cached;
 		return $release;
 	}
 
@@ -128,9 +180,19 @@ function besibau_github_latest_release() {
 		return false;
 	}
 
-	$release = besibau_github_request( 'https://api.github.com/repos/' . $repository . '/releases/latest' );
+	// Primary: no GitHub API involved, so shared-hosting API rate limits cannot block updates.
+	$release = besibau_github_raw_release();
+
+	// Fallback: GitHub API (define BESIBAU_GITHUB_TOKEN in wp-config.php for higher limits).
 	if ( ! $release ) {
-		$release = besibau_github_tag_release();
+		$release = besibau_github_request( 'https://api.github.com/repos/' . $repository . '/releases/latest' );
+		if ( ! $release ) {
+			$release = besibau_github_tag_release();
+		}
+	}
+
+	if ( $release ) {
+		set_site_transient( 'besibau_github_release', $release, 10 * MINUTE_IN_SECONDS );
 	}
 
 	return $release;
@@ -145,6 +207,10 @@ function besibau_github_release_version( $release ) {
 }
 
 function besibau_github_release_package( $release ) {
+	if ( ! empty( $release['package'] ) ) {
+		return $release['package'];
+	}
+
 	if ( ! empty( $release['assets'] ) && is_array( $release['assets'] ) ) {
 		foreach ( $release['assets'] as $asset ) {
 			if ( empty( $asset['name'] ) || 'besibau-theme.zip' !== $asset['name'] ) {
@@ -286,6 +352,7 @@ function besibau_github_update_admin_page() {
 	}
 
 	if ( isset( $_POST['besibau_refresh_updates'] ) && check_admin_referer( 'besibau_refresh_updates' ) ) {
+		delete_site_transient( 'besibau_github_release' );
 		delete_site_transient( 'update_themes' );
 		wp_update_themes();
 		echo '<div class="notice notice-success"><p>' . esc_html__( 'Theme update check refreshed.', 'besibau' ) . '</p></div>';
