@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<div class="f-col">
 			<h4>Kontakt</h4>
-			<p><strong>BesiBau</strong><br><?php echo esc_html( besibau_info( 'address' ) ); ?></p>
+			<p class="footer-contact-line"><i class="fa-solid fa-location-dot"></i><span><?php echo esc_html( besibau_info( 'address' ) ); ?></span></p>
 			<p><a href="tel:<?php echo esc_attr( besibau_info( 'phone_href' ) ); ?>"><i class="fa-solid fa-phone" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'phone' ) ); ?></a><br>
 			<a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><i class="fa-solid fa-envelope" style="color:var(--gold);margin-right:8px"></i><?php echo esc_html( besibau_info( 'email' ) ); ?></a></p>
 		</div>

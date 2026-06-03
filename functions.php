@@ -272,6 +272,109 @@ function besibau_maybe_preload() {
 add_action( 'admin_init', 'besibau_maybe_preload' );
 
 /**
+ * Keep existing Elementor pages in sync with corrected company details.
+ */
+function besibau_update_contact_text_value( $value ) {
+	if ( ! is_string( $value ) ) {
+		return $value;
+	}
+
+	$replacements = array(
+		'Schweiz: Pilatusstrasse 6, 6312 Steinhausen (ZG)' => besibau_info( 'address' ),
+		'Pilatusstrasse 6, 6312 Steinhausen (ZG)'          => besibau_info( 'address' ),
+		'Pilatusstrasse 6, 6312 Steinhausen'               => besibau_info( 'address' ),
+		'+41 76 449 91 40'                                 => besibau_info( 'phone' ),
+		'tel:+41764499140'                                 => 'tel:' . besibau_info( 'phone_href' ),
+		'Schweiz: '                                        => '',
+	);
+
+	return strtr( $value, $replacements );
+}
+
+function besibau_is_removed_contact_item( $item ) {
+	if ( ! is_array( $item ) || empty( $item['text'] ) ) {
+		return false;
+	}
+
+	$text = (string) $item['text'];
+	return false !== strpos( $text, 'Deutschland:' )
+		|| false !== strpos( $text, 'Zur Aumühle' )
+		|| false !== strpos( $text, 'Zur AumÃ¼hle' )
+		|| false !== strpos( $text, 'Illertissen' )
+		|| false !== strpos( $text, '+49 178 6682002' )
+		|| false !== strpos( $text, 'info@besibau.de' );
+}
+
+function besibau_update_elementor_contact_data( $data ) {
+	if ( is_string( $data ) ) {
+		return besibau_update_contact_text_value( $data );
+	}
+
+	if ( ! is_array( $data ) ) {
+		return $data;
+	}
+
+	foreach ( $data as $key => $value ) {
+		if ( 'icon_list' === $key && is_array( $value ) ) {
+			$value = array_values( array_filter( $value, function ( $item ) {
+				return ! besibau_is_removed_contact_item( $item );
+			} ) );
+		}
+
+		$data[ $key ] = besibau_update_elementor_contact_data( $value );
+	}
+
+	return $data;
+}
+
+function besibau_migrate_saved_contact_details() {
+	if ( get_option( 'besibau_contact_details_migrated_v2' ) ) {
+		return;
+	}
+
+	$posts = get_posts( array(
+		'post_type'      => array( 'page', 'elementor_library' ),
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => array(
+			array(
+				'key'     => '_elementor_data',
+				'compare' => 'EXISTS',
+			),
+		),
+	) );
+
+	foreach ( $posts as $post_id ) {
+		$raw = get_post_meta( $post_id, '_elementor_data', true );
+		if ( ! is_string( $raw ) || '' === $raw ) {
+			continue;
+		}
+
+		$decoded = json_decode( $raw, true );
+		if ( is_array( $decoded ) ) {
+			$updated = wp_json_encode( besibau_update_elementor_contact_data( $decoded ) );
+			if ( $updated && $updated !== $raw ) {
+				update_post_meta( $post_id, '_elementor_data', wp_slash( $updated ) );
+			}
+			continue;
+		}
+
+		$updated = besibau_update_contact_text_value( $raw );
+		if ( $updated !== $raw ) {
+			update_post_meta( $post_id, '_elementor_data', wp_slash( $updated ) );
+		}
+	}
+
+	if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+
+	update_option( 'besibau_contact_details_migrated_v2', '1' );
+}
+add_action( 'admin_init', 'besibau_migrate_saved_contact_details' );
+
+/**
  * Contact form handler. Sends to the company email via wp_mail.
  */
 function besibau_handle_contact() {
