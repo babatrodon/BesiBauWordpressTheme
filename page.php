@@ -105,17 +105,7 @@ elseif ( 'kontakt' === $slug ) :
 					<li><i class="fa-solid fa-envelope"></i><div><strong>E-Mail</strong><br><a href="mailto:<?php echo esc_attr( besibau_info( 'email' ) ); ?>"><?php echo esc_html( besibau_info( 'email' ) ); ?></a></div></li>
 				</ul>
 			</div>
-			<form class="contact-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-				<input type="hidden" name="action" value="besibau_contact">
-				<?php wp_nonce_field( 'besibau_contact', 'besibau_nonce' ); ?>
-				<?php if ( isset( $_GET['sent'] ) && '1' === $_GET['sent'] ) : ?>
-					<div class="form-note ok">Vielen Dank! Ihre Anfrage wurde verschickt. Wir melden uns in Kürze.</div>
-				<?php endif; ?>
-				<div class="cf-row"><input type="text" name="name" placeholder="Ihr Name*" required><input type="email" name="email" placeholder="E-Mail*" required></div>
-				<div class="cf-row"><input type="tel" name="phone" placeholder="Telefon"><input type="text" name="subject" placeholder="Betreff"></div>
-				<textarea name="message" placeholder="Ihre Nachricht*" required></textarea>
-				<button class="btn btn-gold" type="submit">Anfrage verschicken</button>
-			</form>
+			<?php echo besibau_render_contact_form(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 	</section>
 	<section class="map-wrap">

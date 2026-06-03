@@ -4,7 +4,7 @@ Theme URI: https://besibau.ch
 Author: BesiBau
 Author URI: https://besibau.ch
 Description: Premium multi-page theme for BesiBau (Bau, Sanierung & Renovation in Zug). On activation it creates the pages and pre-loads each one with its design as editable Elementor blocks (bundled local images). Elementor header/footer locations supported.
-Version: 1.1.9
+Version: 1.1.10
 Update URI: babatrodon/BesiBauWordpressTheme
 Requires at least: 5.8
 Tested up to: 6.6
@@ -192,11 +192,14 @@ body.nav-open .mobile-nav{display:flex}
 .ci-list a:hover{color:var(--gold)}
 .contact-form{background:#fff;border-radius:var(--r-lg);padding:42px;box-shadow:var(--shadow)}
 .cf-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.contact-form input,.contact-form textarea{width:100%;padding:15px 18px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;background:var(--soft);transition:.2s}
+.contact-form input,.contact-form select,.contact-form textarea{width:100%;padding:15px 18px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;background:var(--soft);transition:.2s;color:var(--ink)}
+.contact-form select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 22px) 50%,calc(100% - 16px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:44px}
+.contact-form>input{margin-bottom:18px}
 .contact-form textarea{min-height:150px;margin-bottom:20px;resize:vertical}
-.contact-form input:focus,.contact-form textarea:focus{outline:none;border-color:var(--gold);background:#fff;box-shadow:0 0 0 4px rgba(186,144,86,.12)}
+.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus{outline:none;border-color:var(--gold);background-color:#fff;box-shadow:0 0 0 4px rgba(186,144,86,.12)}
 .form-note{margin-top:14px;padding:12px 16px;border-radius:10px;font-size:.9rem}
 .form-note.ok{background:#e8f5ec;color:#1f7a44}
+.form-note.error{background:#fff1f0;color:#a33a32}
 
 /* cta band */
 .cta-band{position:relative;background:center/cover no-repeat;background-image:url(assets/img/cta.jpg);color:#fff;padding:90px 0;text-align:center}
@@ -316,6 +319,7 @@ body.nav-open .mobile-nav{display:flex}
 .elementor-counter-title,
 .elementor-image-box-title,
 .elementor-image-box-description{font-family:'Montserrat',Helvetica,Arial,sans-serif!important}
+.elementor .contact-form{background:transparent;box-shadow:none;padding:0;border-radius:0}
 
 /* Keep Elementor sections visible even if animation JS is delayed or disabled */
 .elementor-invisible{visibility:visible!important}

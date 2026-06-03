@@ -490,7 +490,10 @@ add_action( 'admin_init', 'besibau_migrate_saved_contact_details' );
  */
 function besibau_repair_elementor_layout_value( $value ) {
 	if ( is_string( $value ) ) {
-		return str_replace( '/assets/img/why.jpg', '/assets/img/hero.jpg', $value );
+		return strtr( $value, array(
+			'/assets/img/why.jpg' => '/assets/img/hero.jpg',
+			'[contact-form-7 id="REPLACE_ID" title="BesiBau Kontakt"]' => '[besibau_contact_form]',
+		) );
 	}
 
 	if ( ! is_array( $value ) ) {
@@ -500,6 +503,13 @@ function besibau_repair_elementor_layout_value( $value ) {
 	if ( isset( $value['settings'] ) && is_array( $value['settings'] ) ) {
 		unset( $value['settings']['animation'] );
 		unset( $value['settings']['_animation'] );
+
+		if ( isset( $value['widgetType'], $value['settings']['shortcode'] ) && 'shortcode' === $value['widgetType'] ) {
+			$shortcode = (string) $value['settings']['shortcode'];
+			if ( false !== strpos( $shortcode, 'contact-form-7' ) || false !== strpos( $shortcode, 'wpforms' ) ) {
+				$value['settings']['shortcode'] = '[besibau_contact_form]';
+			}
+		}
 
 		if ( isset( $value['settings']['link']['url'], $value['settings']['text'] ) && '#' === $value['settings']['link']['url'] ) {
 			$button_text = wp_strip_all_tags( (string) $value['settings']['text'] );
@@ -516,6 +526,18 @@ function besibau_repair_elementor_layout_value( $value ) {
 		}
 	}
 
+	if ( isset( $value['elements'] ) && is_array( $value['elements'] ) ) {
+		$value['elements'] = array_values( array_filter( $value['elements'], function ( $element ) {
+			if ( ! is_array( $element ) || ! isset( $element['widgetType'], $element['settings']['editor'] ) ) {
+				return true;
+			}
+
+			$editor = (string) $element['settings']['editor'];
+			return ! ( 'text-editor' === $element['widgetType']
+				&& ( false !== strpos( $editor, 'Contact Form 7' ) || false !== strpos( $editor, 'WPForms' ) ) );
+		} ) );
+	}
+
 	foreach ( $value as $key => $item ) {
 		$value[ $key ] = besibau_repair_elementor_layout_value( $item );
 	}
@@ -524,7 +546,7 @@ function besibau_repair_elementor_layout_value( $value ) {
 }
 
 function besibau_repair_saved_elementor_layouts() {
-	if ( get_option( 'besibau_layout_repair_v1' ) ) {
+	if ( get_option( 'besibau_layout_repair_v2' ) ) {
 		return;
 	}
 
@@ -562,10 +584,64 @@ function besibau_repair_saved_elementor_layouts() {
 		\Elementor\Plugin::$instance->files_manager->clear_cache();
 	}
 
-	update_option( 'besibau_layout_repair_v1', '1' );
+	update_option( 'besibau_layout_repair_v2', '1' );
 }
 add_action( 'admin_init', 'besibau_repair_saved_elementor_layouts' );
 add_action( 'after_switch_theme', 'besibau_repair_saved_elementor_layouts', 40 );
+
+function besibau_contact_service_options() {
+	return array(
+		''                           => 'Gewünschte Dienstleistung*',
+		'Verputzarbeiten'            => 'Verputzarbeiten',
+		'Spachtel- & Malerarbeiten'  => 'Spachtel- & Malerarbeiten',
+		'Trockenbau'                 => 'Trockenbau',
+		'Fliesenverlegung'           => 'Fliesenverlegung',
+		'Boden- & Parkettverlegung'  => 'Boden- & Parkettverlegung',
+		'Bausanierung'               => 'Bausanierung',
+		'Altbausanierung'            => 'Altbausanierung',
+		'Wohnungssanierung'          => 'Wohnungssanierung',
+		'Badsanierung'               => 'Badsanierung',
+		'Entsorgung'                 => 'Entsorgung',
+		'Offerte / Beratung'         => 'Offerte / Beratung',
+		'Andere Anfrage'             => 'Andere Anfrage',
+	);
+}
+
+function besibau_render_contact_form() {
+	ob_start();
+	?>
+	<form class="contact-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+		<input type="hidden" name="action" value="besibau_contact">
+		<?php wp_nonce_field( 'besibau_contact', 'besibau_nonce' ); ?>
+		<?php if ( isset( $_GET['sent'] ) && '1' === $_GET['sent'] ) : ?>
+			<div class="form-note ok">Vielen Dank! Ihre Anfrage wurde verschickt. Wir melden uns in K&uuml;rze.</div>
+		<?php elseif ( isset( $_GET['sent'] ) && 'error' === $_GET['sent'] ) : ?>
+			<div class="form-note error">Bitte pr&uuml;fen Sie die Angaben und versuchen Sie es erneut.</div>
+		<?php endif; ?>
+		<div class="cf-row">
+			<input type="text" name="name" placeholder="Ihr Name*" required>
+			<input type="email" name="email" placeholder="E-Mail*" required>
+		</div>
+		<div class="cf-row">
+			<input type="tel" name="phone" placeholder="Telefon">
+			<select name="service" required>
+				<?php foreach ( besibau_contact_service_options() as $value => $label ) : ?>
+					<option value="<?php echo esc_attr( $value ); ?>"<?php selected( '', $value ); ?><?php disabled( '', $value ); ?>><?php echo esc_html( $label ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<input type="text" name="subject" placeholder="Betreff">
+		<textarea name="message" placeholder="Ihre Nachricht*" required></textarea>
+		<button class="btn btn-gold" type="submit">Anfrage verschicken</button>
+	</form>
+	<?php
+	return ob_get_clean();
+}
+
+function besibau_contact_form_shortcode() {
+	return besibau_render_contact_form();
+}
+add_shortcode( 'besibau_contact_form', 'besibau_contact_form_shortcode' );
 
 /**
  * Contact form handler. Sends to the company email via wp_mail.
@@ -582,12 +658,19 @@ function besibau_handle_contact() {
 	$name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 	$email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 	$phone   = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
+	$service = isset( $_POST['service'] ) ? sanitize_text_field( wp_unslash( $_POST['service'] ) ) : '';
 	$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : 'Anfrage über die Website';
 	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+
+	if ( ! $name || ! is_email( $email ) || ! $service || ! $message ) {
+		wp_safe_redirect( add_query_arg( 'sent', 'error', $back ) );
+		exit;
+	}
 
 	$body  = "Name: $name\n";
 	$body .= "E-Mail: $email\n";
 	$body .= "Telefon: $phone\n";
+	$body .= "Dienstleistung: $service\n";
 	$body .= "Betreff: $subject\n\n";
 	$body .= "Nachricht:\n$message\n";
 
@@ -596,7 +679,7 @@ function besibau_handle_contact() {
 		$headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
 	}
 
-	wp_mail( besibau_info( 'email' ), 'Website-Anfrage: ' . $subject, $body, $headers );
+	wp_mail( besibau_info( 'email' ), 'Website-Anfrage: ' . $service, $body, $headers );
 
 	wp_safe_redirect( add_query_arg( 'sent', '1', $back ) );
 	exit;
