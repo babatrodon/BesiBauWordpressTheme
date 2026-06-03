@@ -48,3 +48,9 @@ DEVELOPER NOTES
   THEME_URI token, replaced with the live theme URL at load time).
 - inc/github-theme-updater.php : GitHub-based theme updates (Update URI in style.css).
 - .github/workflows/theme-release.yml : packages besibau-theme.zip on push to main.
+
+GITHUB UPDATE TROUBLESHOOTING
+WordPress can only see private GitHub repositories if you add a token in wp-config.php:
+define( 'BESIBAU_GITHUB_TOKEN', 'github_pat_xxx' );
+For a public repository no token is needed. The updater checks the latest GitHub release
+first and falls back to the newest version tag if a release is missing.

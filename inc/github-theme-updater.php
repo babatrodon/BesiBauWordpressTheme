@@ -39,19 +39,28 @@ function besibau_github_repository() {
 	return '';
 }
 
-function besibau_github_request( $url ) {
+function besibau_github_token() {
+	return ( defined( 'BESIBAU_GITHUB_TOKEN' ) && BESIBAU_GITHUB_TOKEN ) ? BESIBAU_GITHUB_TOKEN : '';
+}
+
+function besibau_github_headers( $download = false ) {
 	$headers = array(
-		'Accept'     => 'application/vnd.github+json',
+		'Accept'     => $download ? 'application/octet-stream' : 'application/vnd.github+json',
 		'User-Agent' => 'BesiBau WordPress Theme',
 	);
 
-	if ( defined( 'BESIBAU_GITHUB_TOKEN' ) && BESIBAU_GITHUB_TOKEN ) {
-		$headers['Authorization'] = 'Bearer ' . BESIBAU_GITHUB_TOKEN;
+	$token = besibau_github_token();
+	if ( $token ) {
+		$headers['Authorization'] = 'Bearer ' . $token;
 	}
 
+	return $headers;
+}
+
+function besibau_github_request( $url ) {
 	$response = wp_remote_get( $url, array(
 		'timeout' => 10,
-		'headers' => $headers,
+		'headers' => besibau_github_headers(),
 	) );
 
 	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -60,6 +69,39 @@ function besibau_github_request( $url ) {
 
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 	return is_array( $data ) ? $data : null;
+}
+
+function besibau_github_tag_release() {
+	$repository = besibau_github_repository();
+	if ( ! $repository ) {
+		return false;
+	}
+
+	$tags = besibau_github_request( 'https://api.github.com/repos/' . $repository . '/tags?per_page=100' );
+	if ( empty( $tags ) || ! is_array( $tags ) ) {
+		return false;
+	}
+
+	usort(
+		$tags,
+		function ( $a, $b ) {
+			$a_version = ! empty( $a['name'] ) ? ltrim( $a['name'], 'vV' ) : '';
+			$b_version = ! empty( $b['name'] ) ? ltrim( $b['name'], 'vV' ) : '';
+			return version_compare( $b_version, $a_version );
+		}
+	);
+
+	$tag = reset( $tags );
+	if ( empty( $tag['name'] ) ) {
+		return false;
+	}
+
+	return array(
+		'tag_name'    => $tag['name'],
+		'html_url'    => 'https://github.com/' . $repository . '/releases/tag/' . rawurlencode( $tag['name'] ),
+		'zipball_url' => ! empty( $tag['zipball_url'] ) ? $tag['zipball_url'] : 'https://api.github.com/repos/' . $repository . '/zipball/' . rawurlencode( $tag['name'] ),
+		'body'        => __( 'Automatic GitHub tag package.', 'besibau' ),
+	);
 }
 
 function besibau_github_latest_release() {
@@ -76,6 +118,9 @@ function besibau_github_latest_release() {
 	}
 
 	$release = besibau_github_request( 'https://api.github.com/repos/' . $repository . '/releases/latest' );
+	if ( ! $release ) {
+		$release = besibau_github_tag_release();
+	}
 
 	return $release;
 }
@@ -91,7 +136,13 @@ function besibau_github_release_version( $release ) {
 function besibau_github_release_package( $release ) {
 	if ( ! empty( $release['assets'] ) && is_array( $release['assets'] ) ) {
 		foreach ( $release['assets'] as $asset ) {
-			if ( ! empty( $asset['name'] ) && 'besibau-theme.zip' === $asset['name'] && ! empty( $asset['browser_download_url'] ) ) {
+			if ( empty( $asset['name'] ) || 'besibau-theme.zip' !== $asset['name'] ) {
+				continue;
+			}
+			if ( besibau_github_token() && ! empty( $asset['url'] ) ) {
+				return $asset['url'];
+			}
+			if ( ! empty( $asset['browser_download_url'] ) ) {
 				return $asset['browser_download_url'];
 			}
 		}
@@ -99,6 +150,28 @@ function besibau_github_release_package( $release ) {
 
 	return ! empty( $release['zipball_url'] ) ? $release['zipball_url'] : '';
 }
+
+function besibau_github_download_args( $args, $url ) {
+	$token = besibau_github_token();
+	if ( ! $token || false === strpos( $url, 'https://api.github.com/repos/' ) ) {
+		return $args;
+	}
+
+	$repository = besibau_github_repository();
+	if ( ! $repository || false === strpos( $url, 'https://api.github.com/repos/' . $repository . '/' ) ) {
+		return $args;
+	}
+
+	if ( empty( $args['headers'] ) || ! is_array( $args['headers'] ) ) {
+		$args['headers'] = array();
+	}
+
+	$args['headers'] = array_merge( besibau_github_headers( true ), $args['headers'] );
+	$args['redirection'] = 5;
+
+	return $args;
+}
+add_filter( 'http_request_args', 'besibau_github_download_args', 10, 2 );
 
 function besibau_update_theme_transient( $transient ) {
 	if ( empty( $transient->checked ) ) {

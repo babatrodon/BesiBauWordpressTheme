@@ -46,6 +46,17 @@ jobs:
           TAG: ${{ steps.build.outputs.tag }}
           VERSION: ${{ steps.build.outputs.version }}
         run: |
-          gh release create "$TAG" build/besibau-theme.zip \
-            --title "BesiBau ${VERSION}" \
-            --notes "Automated WordPress theme package for commit ${GITHUB_SHA}."
+          notes="Automated WordPress theme package for commit ${GITHUB_SHA}."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" build/besibau-theme.zip --clobber
+            gh release edit "$TAG" \
+              --title "BesiBau ${VERSION}" \
+              --notes "$notes" \
+              --latest
+          else
+            gh release create "$TAG" build/besibau-theme.zip \
+              --target "$GITHUB_SHA" \
+              --title "BesiBau ${VERSION}" \
+              --notes "$notes" \
+              --latest
+          fi
