@@ -504,6 +504,11 @@ function besibau_repair_elementor_layout_value( $value ) {
 		unset( $value['settings']['animation'] );
 		unset( $value['settings']['_animation'] );
 
+		if ( isset( $value['id'] ) && in_array( $value['id'], array( '8163fe71', '0003927b' ), true ) ) {
+			$value['settings']['_column_size'] = 50;
+			$value['settings']['_inline_size'] = null;
+		}
+
 		if ( isset( $value['widgetType'], $value['settings']['shortcode'] ) && 'shortcode' === $value['widgetType'] ) {
 			$shortcode = (string) $value['settings']['shortcode'];
 			if ( false !== strpos( $shortcode, 'contact-form-7' ) || false !== strpos( $shortcode, 'wpforms' ) ) {
@@ -546,7 +551,7 @@ function besibau_repair_elementor_layout_value( $value ) {
 }
 
 function besibau_repair_saved_elementor_layouts() {
-	if ( get_option( 'besibau_layout_repair_v2' ) ) {
+	if ( get_option( 'besibau_layout_repair_v3' ) ) {
 		return;
 	}
 
@@ -584,7 +589,7 @@ function besibau_repair_saved_elementor_layouts() {
 		\Elementor\Plugin::$instance->files_manager->clear_cache();
 	}
 
-	update_option( 'besibau_layout_repair_v2', '1' );
+	update_option( 'besibau_layout_repair_v3', '1' );
 }
 add_action( 'admin_init', 'besibau_repair_saved_elementor_layouts' );
 add_action( 'after_switch_theme', 'besibau_repair_saved_elementor_layouts', 40 );

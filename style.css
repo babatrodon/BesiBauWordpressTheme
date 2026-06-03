@@ -4,7 +4,7 @@ Theme URI: https://besibau.ch
 Author: BesiBau
 Author URI: https://besibau.ch
 Description: Premium multi-page theme for BesiBau (Bau, Sanierung & Renovation in Zug). On activation it creates the pages and pre-loads each one with its design as editable Elementor blocks (bundled local images). Elementor header/footer locations supported.
-Version: 1.1.10
+Version: 1.1.11
 Update URI: babatrodon/BesiBauWordpressTheme
 Requires at least: 5.8
 Tested up to: 6.6
@@ -183,7 +183,7 @@ body.nav-open .mobile-nav{display:flex}
 .proj-body p{color:var(--grey);font-size:.92rem}
 
 /* contact */
-.contact-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:54px}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:54px}
 .contact-info p{color:var(--grey);margin-bottom:26px}
 .ci-list{list-style:none;display:grid;gap:18px}
 .ci-list li{display:flex;gap:16px;align-items:flex-start}
@@ -319,7 +319,14 @@ body.nav-open .mobile-nav{display:flex}
 .elementor-counter-title,
 .elementor-image-box-title,
 .elementor-image-box-description{font-family:'Montserrat',Helvetica,Arial,sans-serif!important}
-.elementor .contact-form{background:transparent;box-shadow:none;padding:0;border-radius:0}
+.elementor .elementor-widget-shortcode,.elementor .elementor-shortcode{width:100%}
+.elementor .contact-form,.elementor .elementor-widget-shortcode .contact-form{width:100%!important;background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+@media(min-width:768px){.elementor .elementor-element-8163fe71,.elementor .elementor-element-0003927b{width:50%!important}}
+@media(max-width:767px){.elementor .elementor-element-8163fe71,.elementor .elementor-element-0003927b{width:100%!important}.elementor .elementor-element-0003927b{margin-top:28px}}
+
+/* Final typography guard: keep Elementor and form controls on Montserrat */
+body,button,input,select,textarea,
+body :where(p,a,span,div,li,label,strong,em,small,h1,h2,h3,h4,h5,h6,.elementor-heading-title,.elementor-button,.elementor-icon-list-text):not(i):not(.fa):not(.fas):not(.far):not(.fab):not(.fa-solid):not(.fa-brands):not(.elementor-icon):not([class*="eicon"]){font-family:'Montserrat',Helvetica,Arial,sans-serif!important}
 
 /* Keep Elementor sections visible even if animation JS is delayed or disabled */
 .elementor-invisible{visibility:visible!important}
