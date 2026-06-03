@@ -36,7 +36,7 @@ function besibau_github_repository() {
 		return $repository;
 	}
 
-	return '';
+	return 'babatrodon/BesiBauWordpressTheme';
 }
 
 function besibau_github_token() {
@@ -63,9 +63,20 @@ function besibau_github_request( $url ) {
 		'headers' => besibau_github_headers(),
 	) );
 
-	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+	if ( is_wp_error( $response ) ) {
+		$GLOBALS['besibau_github_last_error'] = $response->get_error_message();
 		return null;
 	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+	$GLOBALS['besibau_github_last_response_code'] = $code;
+
+	if ( 200 !== $code ) {
+		$GLOBALS['besibau_github_last_error'] = trim( wp_remote_retrieve_body( $response ) );
+		return null;
+	}
+
+	$GLOBALS['besibau_github_last_error'] = '';
 
 	$data = json_decode( wp_remote_retrieve_body( $response ), true );
 	return is_array( $data ) ? $data : null;
@@ -299,6 +310,8 @@ function besibau_github_update_admin_page() {
 	echo '<tr><th>' . esc_html__( 'Package URL', 'besibau' ) . '</th><td><code style="word-break:break-all">' . esc_html( $package ? $package : __( 'Not found', 'besibau' ) ) . '</code></td></tr>';
 	echo '<tr><th>' . esc_html__( 'Update available', 'besibau' ) . '</th><td>' . esc_html( $has_update ? __( 'Yes', 'besibau' ) : __( 'No', 'besibau' ) ) . '</td></tr>';
 	echo '<tr><th>' . esc_html__( 'Update transient has BesiBau response', 'besibau' ) . '</th><td>' . esc_html( ( isset( $update_data->response ) && isset( $update_data->response[ $stylesheet ] ) ) ? __( 'Yes', 'besibau' ) : __( 'No', 'besibau' ) ) . '</td></tr>';
+	echo '<tr><th>' . esc_html__( 'Last GitHub HTTP code', 'besibau' ) . '</th><td><code>' . esc_html( isset( $GLOBALS['besibau_github_last_response_code'] ) ? $GLOBALS['besibau_github_last_response_code'] : __( 'No response', 'besibau' ) ) . '</code></td></tr>';
+	echo '<tr><th>' . esc_html__( 'Last GitHub error', 'besibau' ) . '</th><td><code style="word-break:break-all">' . esc_html( ! empty( $GLOBALS['besibau_github_last_error'] ) ? $GLOBALS['besibau_github_last_error'] : __( 'None', 'besibau' ) ) . '</code></td></tr>';
 	echo '</tbody></table>';
 	echo '<form method="post" style="margin-top:20px">';
 	wp_nonce_field( 'besibau_refresh_updates' );
