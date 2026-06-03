@@ -25,9 +25,9 @@ GITHUB AUTOMATIC UPDATES
 This theme includes a GitHub release updater and a GitHub Actions workflow.
 
 Setup:
-1. Create a GitHub repository named besibau-theme.
+1. Create a GitHub repository for the theme.
 2. In style.css, replace:
-   Update URI: https://github.com/YOUR-GITHUB-USERNAME/besibau-theme
+   Update URI: https://github.com/babatrodon/BesiBauWordpressTheme
    with your real GitHub repository URL.
 3. Push the theme to the main branch.
 
